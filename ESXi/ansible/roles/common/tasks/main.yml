@@ -9,6 +9,15 @@
 
 - debug: msg="{{ sysinternals.stdout_lines }}"
 
+- name: Installing the Splunk Universal Forwarder
+  win_shell: ".\\install-splunkuf.ps1"
+  args:
+    chdir: 'c:\vagrant\scripts'
+  register: splunkuf
+  failed_when: "'Exception' in splunkuf.stdout"
+
+- debug: msg="{{ splunkuf.stdout_lines }}"
+
 - name: Install Utilities 
   win_chocolatey:
     name:
