@@ -12,9 +12,8 @@ If (-not (Test-Path "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe"))
   }
   Else {
     Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Found local installation package, installing..."
-    $msiFile = "C:\vagrant\resources\splunk_forwarder\splunkforwarder-8.0.5-a1a6394cc5ae-x64-release.msi"
+    $msiFile = "C:\Source\splunkforwarder-8.0.5-a1a6394cc5ae-x64-release.msi"
     Start-Process -FilePath "c:\windows\system32\msiexec.exe" -ArgumentList '/i', "$msiFile", 'RECEIVING_INDEXER="10.1.1.2:9997" AGREETOLICENSE=yes SPLUNKPASSWORD=changeme /quiet' -Wait
-
   }
 } Else {
   Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Splunk is already installed. Moving on."

@@ -9,7 +9,17 @@
 
 - debug: msg="{{ sysinternals.stdout_lines }}"
 
-- name: Installing the Splunk Universal Forwarder
+- name: Check if existing Source directory
+  win_stat:
+    path: 'c:\Source'
+  register: dir
+
+- name: Download Splunk Universal Forwarder
+  win_get_url:
+    url: 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=windows&version=8.0.5&product=universalforwarder&filename=splunkforwarder-8.0.5-a1a6394cc5ae-x64-release.msi&wget=true'
+    dest: 'c:\Source\splunkforwarder-8.0.5-a1a6394cc5ae-x64-release.msi'
+
+- name: Install Splunk Universal Forwarder
   win_shell: ".\\install-splunkuf.ps1"
   args:
     chdir: 'c:\vagrant\scripts'
