@@ -146,13 +146,6 @@
   register: install_splunk
   changed_when: "'The Splunk web interface is at https://splunk:8000' in install_splunk.stdout"
 
-  - name: Configure Splunk
-  args: 
-    executable: /bin/bash
-  become: yes
-  shell: |
-    /opt/splunk/bin/splunk add index wineventlog -auth 'admin:changeme'
-
   - name: Install Splunk Add-Ons
   args: 
     executable: /bin/bash
