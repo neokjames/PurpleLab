@@ -117,7 +117,6 @@
         exit 1
       fi
       /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd changeme
-      /opt/splunk/bin/splunk add index wineventlog -auth 'admin:changeme'
       # Add a Splunk TCP input on port 9997
       echo -e "[splunktcp://9997]\nconnection_host = ip" >/opt/splunk/etc/apps/search/local/inputs.conf
       # Skip Splunk Tour and Change Password Dialog
@@ -146,6 +145,49 @@
       fi
   register: install_splunk
   changed_when: "'The Splunk web interface is at https://splunk:8000' in install_splunk.stdout"
+
+  - name: Configure Splunk
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+    /opt/splunk/bin/splunk add index wineventlog -auth 'admin:changeme'
+
+  - name: Install Splunk Add-Ons
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+    /opt/splunk/bin/splunk install app /vagrant/resources/splunk_forwarder/splunk-add-on-for-microsoft-windows_800.tgz -auth 'admin:changeme'
+    /opt/splunk/bin/splunk install app /vagrant/resources/splunk_forwarder/splunk-add-on-for-microsoft-sysmon_1062.tgz -auth 'admin:changeme'
+
+  - name: Install Guacamole
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: | 
+    echo "[$(date +%H:%M:%S)]: Installing Guacamole..."
+    cd /opt
+    apt-get -qq install -y gcc g++ libcairo2-dev libjpeg-turbo8-dev libpng-dev libtool-bin libossp-uuid-dev libavcodec-dev libavutil-dev libswscale-dev freerdp2-dev libpango1.0-dev libssh2-1-dev libvncserver-dev libtelnet-dev libssl-dev libvorbis-dev libwebp-dev
+    wget --progress=bar:force "http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/1.2.0/source/guacamole-server-1.2.0.tar.gz" -O guacamole-server-1.2.0.tar.gz
+    tar -xf guacamole-server-1.2.0.tar.gz && cd guacamole-server-1.2.0
+    ./configure &>/dev/null && make --quiet &>/dev/null && make --quiet install &>/dev/null || echo "[-] An error occurred while installing Guacamole."
+    ldconfig
+    cd /var/lib/tomcat9/webapps
+    wget --progress=bar:force "http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/1.2.0/binary/guacamole-1.2.0.war" -O guacamole.war
+    mkdir /etc/guacamole
+    mkdir /usr/share/tomcat9/.guacamole
+    cp /vagrant/resources/guacamole/user-mapping.xml /etc/guacamole/
+    cp /vagrant/resources/guacamole/guacamole.properties /etc/guacamole/
+    cp /vagrant/resources/guacamole/guacd.service /lib/systemd/system
+    sudo ln -s /etc/guacamole/guacamole.properties /usr/share/tomcat9/.guacamole/
+    sudo ln -s /etc/guacamole/user-mapping.xml /usr/share/tomcat9/.guacamole/
+    systemctl enable guacd
+    systemctl enable tomcat9
+    systemctl start guacd
+    systemctl start tomcat9
+  register: install_guacamole
+  failed_when: "'error' in install_guacamole.stderr"
 
 - name: Postinstall Tasks
   args: 
