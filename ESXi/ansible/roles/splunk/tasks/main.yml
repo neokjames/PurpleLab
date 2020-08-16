@@ -146,14 +146,14 @@
   register: install_splunk
   changed_when: "'The Splunk web interface is at https://splunk:8000' in install_splunk.stdout"
 
-  - name: Configure Splunk
+- name: Configure Splunk
   args: 
     executable: /bin/bash
   become: yes
   shell: |
     /opt/splunk/bin/splunk add index wineventlog -auth 'admin:changeme'
 
-  - name: Install Splunk AddOns
+- name: Install Splunk Add-Ons
   args: 
     executable: /bin/bash
   become: yes
@@ -161,7 +161,7 @@
     /opt/splunk/bin/splunk install app /vagrant/resources/splunk_forwarder/splunk-add-on-for-microsoft-windows_800.tgz -auth 'admin:changeme'
     /opt/splunk/bin/splunk install app /vagrant/resources/splunk_forwarder/splunk-add-on-for-microsoft-sysmon_1062.tgz -auth 'admin:changeme'
 
-  - name: Install Guacamole
+- name: Install Guacamole
   args: 
     executable: /bin/bash
   become: yes
