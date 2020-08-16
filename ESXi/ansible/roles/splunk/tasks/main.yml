@@ -162,6 +162,7 @@
   shell: |
     /opt/splunk/bin/splunk install app /vagrant/resources/splunk_forwarder/splunk-add-on-for-microsoft-windows_800.tgz -auth 'admin:changeme'
     /opt/splunk/bin/splunk install app /vagrant/resources/splunk_forwarder/splunk-add-on-for-microsoft-sysmon_1062.tgz -auth 'admin:changeme'
+    /opt/splunk/bin/splunk restart
   register: install_splunk_addons
   changed_when: "'You need to restart the Splunk Server (splunkd) for your changes to take effect.' in install_splunk_addons.stdout"
 
