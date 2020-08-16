@@ -1,0 +1,33 @@
+<user-mapping>
+    <authorize username="vagrant" password="vagrant">
+        <connection name="Splunk">
+            <protocol>ssh</protocol>
+            <param name="hostname">10.1.1.2</param>
+            <param name="port">22</param>
+            <param name="username">vagrant</param>
+            <param name="password">vagrant</param>
+        </connection>
+
+        <connection name="Win10">
+            <protocol>rdp</protocol>
+            <param name="hostname">10.1.1.3</param>
+            <param name="port">3389</param>
+            <param name="username">vagrant</param>
+            <param name="password">vagrant</param>
+			<param name="domain">purple.lab</param>
+            <param name="security">nla</param>
+            <param name="ignore-cert">true</param>
+        </connection>
+
+        <connection name="DC">
+            <protocol>rdp</protocol>
+            <param name="hostname">10.1.1.1</param>
+            <param name="port">3389</param>
+            <param name="username">vagrant</param>
+            <param name="password">vagrant</param>
+			<param name="domain">purple.lab</param>
+            <param name="security">nla</param>
+            <param name="ignore-cert">true</param>
+        </connection>
+    </authorize>
+</user-mapping>

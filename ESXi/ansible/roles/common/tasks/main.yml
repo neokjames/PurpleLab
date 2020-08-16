@@ -1,0 +1,13 @@
+---
+
+- name: Install Utilities 
+  win_chocolatey:
+    name:
+    - NotepadPlusPlus
+    - microsoft-edge
+    - 7zip
+    state: present
+    ignore_checksums: yes
+
+
+

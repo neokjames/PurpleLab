@@ -1,0 +1,14 @@
+Vagrant/.vagrant/*
+Vagrant/vagrant*.log
+Packer/packer_cache/*
+Packer/packer_build.log
+ESXi/Packer/variables.json
+Boxes/*
+.DS_Store
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+inventory.yml.bak
+*.box
+manifest.xml

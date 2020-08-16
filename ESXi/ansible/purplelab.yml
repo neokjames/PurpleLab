@@ -1,0 +1,12 @@
+---
+
+- hosts: splunk
+  roles:
+    - splunk
+  tags: splunk
+
+- hosts: dc
+  roles:
+    - dc
+    - common
+  tags: dc

@@ -1,0 +1,14 @@
+---
+
+splunk:
+  hosts:
+    172.16.0.139:
+      ansible_user: vagrant
+      ansible_password: vagrant
+      ansible_port: 22
+      ansible_connection: ssh
+      ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+
+dc:
+  hosts:
+    172.16.0.140:

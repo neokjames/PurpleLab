@@ -1,0 +1,164 @@
+---
+
+- name: Set hostname to splunk
+  hostname:
+    name: splunk
+  become: yes
+
+- name: Create a directory if it does not exist
+  file:
+    path: /vagrant
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Copy vagrant resources
+  synchronize:
+    src: ../../Vagrant/resources
+    dest: /vagrant/
+  become: yes
+
+- name: Copy bootstrap file
+  copy:
+    src: ../../Vagrant/bootstrap.sh
+    dest: /home/vagrant
+    owner: vagrant
+    group: vagrant
+    mode: u+x,g+x
+
+- name: Copy netplan file
+  copy:
+    src: ../resources/01-netcfg.yaml
+    dest: /tmp
+    owner: vagrant
+    group: vagrant
+
+- name: Copy the netplan file over as root
+  shell: "mv /tmp/01-netcfg.yaml /etc/netplan/01-netcfg.yaml"
+  become: yes
+
+- name: Apply the new netplan
+  shell: netplan apply
+  become: yes
+
+- name: Add APT Repositories
+  apt_repository:
+    repo: "{{ item }}"
+  with_items:
+    - "ppa:apt-fast/stable"
+    - "ppa:rmescandon/yq"
+  become: yes
+
+- name: Install apt-fast
+  become: yes
+  apt:
+    name: apt-fast
+    update_cache: yes
+
+- name: Install tools via apt-fast
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+      echo "[$(date +%H:%M:%S)]: Running apt-fast install..."
+      apt-fast -qq install -y jq whois build-essential git unzip htop yq nano
+  register: apt_install_prerequisites
+  failed_when: "'error' in apt_install_prerequisites.stderr"
+
+- name: Test Prerequisites
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+    for package in jq whois build-essential git unzip yq nano; do
+      echo "[$(date +%H:%M:%S)]: [TEST] Validating that $package is correctly installed..."
+      # Loop through each package using dpkg
+      if ! dpkg -S $package >/dev/null; then
+        # If which returns a non-zero return code, try to re-install the package
+        echo "[-] $package was not found. Attempting to reinstall."
+        apt-get -qq update && apt-get install -y $package
+        if ! which $package >/dev/null; then
+          # If the reinstall fails, give up
+          echo "[X] Unable to install $package even after a retry. Exiting."
+          exit 1
+        fi
+      else
+        echo "[+] $package was successfully installed!"
+      fi
+    done
+  register: test_prerequisites
+  failed_when: "'error' in test_prerequisites.stderr"
+
+- name: Install Splunk
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+    # Check if Splunk is already installed
+    if [ -f "/opt/splunk/bin/splunk" ]; then
+      echo "[$(date +%H:%M:%S)]: Splunk is already installed"
+    else
+      echo "[$(date +%H:%M:%S)]: Installing Splunk..."
+      # Get download.splunk.com into the DNS cache. Sometimes resolution randomly fails during wget below
+      dig @8.8.8.8 download.splunk.com >/dev/null
+      dig @8.8.8.8 splunk.com >/dev/null
+      dig @8.8.8.8 www.splunk.com >/dev/null
+      # Try to resolve the latest version of Splunk by parsing the HTML on the downloads page
+      echo "[$(date +%H:%M:%S)]: Attempting to autoresolve the latest version of Splunk..."
+      LATEST_SPLUNK=$(curl https://www.splunk.com/en_us/download/splunk-enterprise.html | grep -i deb | grep -Eo "data-link=\"................................................................................................................................" | cut -d '"' -f 2)
+      # Sanity check what was returned from the auto-parse attempt
+      if [[ "$(echo $LATEST_SPLUNK | grep -c "^https:")" -eq 1 ]] && [[ "$(echo $LATEST_SPLUNK | grep -c "\.deb$")" -eq 1 ]]; then
+        echo "[$(date +%H:%M:%S)]: The URL to the latest Splunk version was automatically resolved as: $LATEST_SPLUNK"
+        echo "[$(date +%H:%M:%S)]: Attempting to download..."
+        wget --progress=bar:force -P /opt "$LATEST_SPLUNK"
+      else
+        echo "[$(date +%H:%M:%S)]: Unable to auto-resolve the latest Splunk version. Falling back to hardcoded URL..."
+        # Download Hardcoded Splunk
+        wget --progress=bar:force -O /opt/splunk-8.0.2-a7f645ddaf91-linux-2.6-amd64.deb 'https://download.splunk.com/products/splunk/releases/8.0.2/linux/splunk-8.0.2-a7f645ddaf91-linux-2.6-amd64.deb&wget=true'
+      fi
+      if ! ls /opt/splunk*.deb 1> /dev/null 2>&1; then
+        echo "Something went wrong while trying to download Splunk. This script cannot continue. Exiting."
+        exit 1
+      fi
+      if ! dpkg -i /opt/splunk*.deb > /dev/null; then
+        echo "Something went wrong while trying to install Splunk. This script cannot continue. Exiting."
+        exit 1
+      fi
+      /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd changeme
+      /opt/splunk/bin/splunk add index wineventlog -auth 'admin:changeme'
+      # Add a Splunk TCP input on port 9997
+      echo -e "[splunktcp://9997]\nconnection_host = ip" >/opt/splunk/etc/apps/search/local/inputs.conf
+      # Skip Splunk Tour and Change Password Dialog
+      echo "[$(date +%H:%M:%S)]: Disabling the Splunk tour prompt..."
+      touch /opt/splunk/etc/.ui_login
+      mkdir -p /opt/splunk/etc/users/admin/search/local
+      echo -e "[search-tour]\nviewed = 1" >/opt/splunk/etc/system/local/ui-tour.conf
+      # Source: https://answers.splunk.com/answers/660728/how-to-disable-the-modal-pop-up-help-us-to-improve.html
+      if [ ! -d "/opt/splunk/etc/users/admin/user-prefs/local" ]; then
+        mkdir -p "/opt/splunk/etc/users/admin/user-prefs/local"
+      fi
+      echo '[general]
+      render_version_messages = 1
+      dismissedInstrumentationOptInVersion = 4
+      notification_python_3_impact = false' > /opt/splunk/etc/users/admin/user-prefs/local/user-prefs.conf
+      # Disable the instrumentation popup
+      echo -e "showOptInModal = 0\noptInVersionAcknowledged = 4" >>/opt/splunk/etc/apps/splunk_instrumentation/local/telemetry.conf
+      # Enable SSL Login for Splunk
+      echo -e "[settings]\nenableSplunkWebSSL = true" >/opt/splunk/etc/system/local/web.conf
+      if [ ! -d "/opt/splunk/etc/apps/search/local/data/ui/views" ]; then
+        mkdir -p "/opt/splunk/etc/apps/search/local/data/ui/views"
+      fi
+      # Reboot Splunk to make changes take effect
+        /opt/splunk/bin/splunk restart
+        /opt/splunk/bin/splunk enable boot-start
+      fi
+  register: install_splunk
+  changed_when: "'The Splunk web interface is at https://splunk:8000' in install_splunk.stdout"
+
+- name: Postinstall Tasks
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+    # Include Splunk in the PATH
+    echo export PATH="$PATH:/opt/splunk/bin" >>~/.bashrc
