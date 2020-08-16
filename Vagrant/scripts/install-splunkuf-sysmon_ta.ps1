@@ -9,12 +9,12 @@ If (Test-Path "C:\Program Files\SplunkUniversalForwarder\etc\apps\TA-microsoft-s
 
 # Install Sysmon TA
 $sysmontaPath = "C:\vagrant\resources\splunk_forwarder\splunk-add-on-for-microsoft-sysmon_1062.tgz"
-$inputsPath = "C:\Program Files\SplunkUniversalForwarder\etc\apps\TA-microsoft-sysmon\local\inputs.conf"
 Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Installing the Sysmon TA"
 Start-Process -FilePath "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe" -ArgumentList "install app $sysmontaPath -auth admin:changeme" -NoNewWindow
 
 # Create local directory
 If (Test-Path "C:\Program Files\SplunkUniversalForwarder\etc\apps\TA-microsoft-sysmon\default") {
+  $inputsPath = "C:\Program Files\SplunkUniversalForwarder\etc\apps\TA-microsoft-sysmon\local\inputs.conf"
   New-Item -ItemType Directory -Force -Path "C:\Program Files\SplunkUniversalForwarder\etc\apps\TA-microsoft-sysmon\local"
   Copy-Item c:\vagrant\resources\splunk_forwarder\sysmon_ta_inputs.conf $inputsPath -Force
 }
