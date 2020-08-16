@@ -18,6 +18,24 @@
 
 - debug: msg="{{ splunkuf.stdout_lines }}"
 
+- name: Installing Splunk Windows TA
+  win_shell: ".\\install-splunkuf-windows_ta.ps1"
+  args:
+    chdir: 'c:\vagrant\scripts'
+  register: windowsta
+  failed_when: "'Exception' in windowsta.stdout"
+
+- debug: msg="{{ windowsta.stdout_lines }}"
+
+- name: Installing Splunk Sysmon TA
+  win_shell: ".\\install-splunkuf-sysmon_ta.ps1"
+  args:
+    chdir: 'c:\vagrant\scripts'
+  register: sysmonta
+  failed_when: "'Exception' in sysmonta.stdout"
+
+- debug: msg="{{ sysmonta.stdout_lines }}"
+
 - name: Install Utilities 
   win_chocolatey:
     name:
