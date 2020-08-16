@@ -2,7 +2,7 @@
 Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Importing the GPO to allow windomain/vagrant to RDP..."
 Import-GPO -BackupGpoName 'Allow Domain Users RDP' -Path "c:\vagrant\resources\GPO\rdp_users" -TargetName 'Allow Domain Users RDP' -CreateIfNeeded
 
-$OU = "ou=Workstations,dc=windomain,dc=local"
+$OU = "ou=Workstations,dc=purple,dc=lab"
 $gPLinks = $null
 $gPLinks = Get-ADOrganizationalUnit -Identity $OU -Properties name,distinguishedName, gPLink, gPOptions
 $GPO = Get-GPO -Name 'Allow Domain Users RDP'
@@ -14,7 +14,7 @@ else
 {
   Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Allow Domain Users RDP GPO was already linked at $OU. Moving On."
 }
-$OU = "ou=Servers,dc=windomain,dc=local"
+$OU = "ou=Servers,dc=purple,dc=lab"
 $gPLinks = $null
 $gPLinks = Get-ADOrganizationalUnit -Identity $OU -Properties name,distinguishedName, gPLink, gPOptions
 $GPO = Get-GPO -Name 'Allow Domain Users RDP'

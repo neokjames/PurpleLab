@@ -1,4 +1,4 @@
-# Purpose: Installs a Splunk Universal Forwader on the host
+# Purpose: Installs a Splunk Universal Forwarder on the host
 
 If (-not (Test-Path "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe")) {
   Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Downloading Splunk Universal Forwarder..."

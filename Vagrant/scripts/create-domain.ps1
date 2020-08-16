@@ -1,10 +1,10 @@
-# Purpose: Creates the "windomain.local" domain
+# Purpose: Creates the "purple.lab" domain
 # Source: https://github.com/StefanScherer/adfs2
 param ([String] $ip)
 
 $subnet = $ip -replace "\.\d+$", ""
 
-$domain= "windomain.local"
+$domain= "purple.lab"
 
 if ((gwmi win32_computersystem).partofdomain -eq $false) {
 
@@ -37,7 +37,7 @@ if ((gwmi win32_computersystem).partofdomain -eq $false) {
     -DatabasePath "C:\Windows\NTDS" `
     -DomainMode "7" `
     -DomainName $domain `
-    -DomainNetbiosName "WINDOMAIN" `
+    -DomainNetbiosName "PURPLELAB" `
     -ForestMode "7" `
     -InstallDns:$true `
     -LogPath "C:\Windows\NTDS" `
