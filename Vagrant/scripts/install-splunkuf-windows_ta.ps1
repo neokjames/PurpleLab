@@ -14,8 +14,10 @@ Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Installing the Windows TA"
 Start-Process -FilePath "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe" -ArgumentList "install app $windowstaPath -auth admin:changeme" -NoNewWindow
 
 # Create local directory
-New-Item -ItemType Directory -Force -Path "C:\Program Files\SplunkUniversalForwarder\etc\apps\Splunk_TA_windows\local"
-Copy-Item c:\vagrant\resources\splunk_forwarder\windows_ta_inputs.conf $inputsPath -Force
+If (Test-Path "C:\Program Files\SplunkUniversalForwarder\etc\apps\Splunk_TA_windows\default") {
+  New-Item -ItemType Directory -Force -Path "C:\Program Files\SplunkUniversalForwarder\etc\apps\Splunk_TA_windows\local"
+  Copy-Item c:\vagrant\resources\splunk_forwarder\windows_ta_inputs.conf $inputsPath -Force
+}
 
 # Add a check here to make sure the TA was installed correctly
 Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Sleeping for 15 seconds"

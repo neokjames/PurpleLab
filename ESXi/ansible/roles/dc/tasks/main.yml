@@ -25,7 +25,7 @@
     path: 'c:\PurpleLab'
   register: dir
 
-- name: Git clone Detectionlab
+- name: Git clone PurpleLab
   win_shell: git clone https://github.com/neokjames/PurpleLab.git
   args:
     chdir: 'c:\'

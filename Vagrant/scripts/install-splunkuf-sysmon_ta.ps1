@@ -14,8 +14,10 @@ Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Installing the Sysmon TA"
 Start-Process -FilePath "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe" -ArgumentList "install app $sysmontaPath -auth admin:changeme" -NoNewWindow
 
 # Create local directory
-New-Item -ItemType Directory -Force -Path "C:\Program Files\SplunkUniversalForwarder\etc\apps\TA-microsoft-sysmon\local"
-Copy-Item c:\vagrant\resources\splunk_forwarder\sysmon_ta_inputs.conf $inputsPath -Force
+If (Test-Path "C:\Program Files\SplunkUniversalForwarder\etc\apps\TA-microsoft-sysmon\default") {
+  New-Item -ItemType Directory -Force -Path "C:\Program Files\SplunkUniversalForwarder\etc\apps\TA-microsoft-sysmon\local"
+  Copy-Item c:\vagrant\resources\splunk_forwarder\sysmon_ta_inputs.conf $inputsPath -Force
+}
 
 # Add a check here to make sure the TA was installed correctly
 Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Sleeping for 15 seconds"

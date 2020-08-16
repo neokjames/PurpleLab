@@ -10,9 +10,9 @@
 - debug: msg="{{ sysinternals.stdout_lines }}"
 
 - name: Check if existing Source directory
-  win_stat:
+  win_file:
     path: 'c:\Source'
-  register: dir
+    state: directory
 
 - name: Download Splunk Universal Forwarder
   win_get_url:
