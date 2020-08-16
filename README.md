@@ -54,9 +54,9 @@ Packages:
 
 Splunk Universal Forwarder 8.0.5
 
-- [https://splunkbase.splunk.com/app/742/](Splunk Add-On for Microsoft Windows 8.0.0)
-- [https://splunkbase.splunk.com/app/1914](Splunk Add-On for Microsoft Sysmon 10.6.2)
+- [Splunk Add-On for Microsoft Windows 8.0.0](https://splunkbase.splunk.com/app/742)
+- [Splunk Add-On for Microsoft Sysmon 10.6.2](https://splunkbase.splunk.com/app/1914)
 
 # Acknowledgements
 
-Inspired by [https://github.com/clong/DetectionLab](Detection Lab)
+Inspired by [Detection Lab](https://github.com/clong/DetectionLab)
