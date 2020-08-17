@@ -1,1 +1,26 @@
+- name: Download Cribl
+  get_url:
+    url: https://cdn.cribl.io/dl/2.2.2/cribl-2.2.2-daa210f8-linux-x64.tgz
+    dest: /opt/cribl-2.2.2-daa210f8-linux-x64.tgz
 
+- name: Extract Cribl
+  unarchive:
+    src: /opt/cribl-2.2.2-daa210f8-linux-x64.tgz
+    dest: /opt/
+
+- name: Install Cribl
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+    /opt/cribl/bin/cribl boot-start enable -m systemd
+    systemctl enable cribl
+    systemctl start cribl
+
+- name: Postinstall Tasks
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+    # Include Cribl in the PATH
+    echo export PATH="$PATH:/opt/cribl/bin" >>~/.bashrc
