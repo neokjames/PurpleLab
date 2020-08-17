@@ -80,77 +80,73 @@
     done
   register: test_prerequisites
   failed_when: "'error' in test_prerequisites.stderr"
+  
+- name: Check if Splunk is installed
+  command: dpkg-query -W splunk-8.0.5-a1a6394cc5ae-linux-2.6-amd64.deb
+  register: splunk_check_deb
+  failed_when: splunk_check_deb.rc > 1
+  changed_when: splunk_check_deb.rc == 1
+  
+- name: Download Splunk
+  get_url:
+    url: http://download.splunk.com/products/splunk/releases/8.0.5/linux/splunk-8.0.5-a1a6394cc5ae-linux-2.6-amd64.deb
+    dest: /opt/splunk-8.0.5-a1a6394cc5ae-linux-2.6-amd64.deb
 
 - name: Install Splunk
+  apt: deb="/opt/splunk-8.0.5-a1a6394cc5ae-linux-2.6-amd64.deb"
+  sudo: true
+  when: splunk_check_deb.rc == 1
+
+- name: Start Splunk
   args: 
     executable: /bin/bash
   become: yes
   shell: |
-    # Check if Splunk is already installed
-    if [ -f "/opt/splunk/bin/splunk" ]; then
-      echo "[$(date +%H:%M:%S)]: Splunk is already installed"
-    else
-      echo "[$(date +%H:%M:%S)]: Installing Splunk..."
-      # Get download.splunk.com into the DNS cache. Sometimes resolution randomly fails during wget below
-      dig @8.8.8.8 download.splunk.com >/dev/null
-      dig @8.8.8.8 splunk.com >/dev/null
-      dig @8.8.8.8 www.splunk.com >/dev/null
-      # Try to resolve the latest version of Splunk by parsing the HTML on the downloads page
-      echo "[$(date +%H:%M:%S)]: Attempting to autoresolve the latest version of Splunk..."
-      LATEST_SPLUNK=$(curl https://www.splunk.com/en_us/download/splunk-enterprise.html | grep -i deb | grep -Eo "data-link=\"................................................................................................................................" | cut -d '"' -f 2)
-      # Sanity check what was returned from the auto-parse attempt
-      if [[ "$(echo $LATEST_SPLUNK | grep -c "^https:")" -eq 1 ]] && [[ "$(echo $LATEST_SPLUNK | grep -c "\.deb$")" -eq 1 ]]; then
-        echo "[$(date +%H:%M:%S)]: The URL to the latest Splunk version was automatically resolved as: $LATEST_SPLUNK"
-        echo "[$(date +%H:%M:%S)]: Attempting to download..."
-        wget --progress=bar:force -P /opt "$LATEST_SPLUNK"
-      else
-        echo "[$(date +%H:%M:%S)]: Unable to auto-resolve the latest Splunk version. Falling back to hardcoded URL..."
-        # Download Hardcoded Splunk
-        wget --progress=bar:force -O /opt/splunk-8.0.2-a7f645ddaf91-linux-2.6-amd64.deb 'https://download.splunk.com/products/splunk/releases/8.0.2/linux/splunk-8.0.2-a7f645ddaf91-linux-2.6-amd64.deb&wget=true'
-      fi
-      if ! ls /opt/splunk*.deb 1> /dev/null 2>&1; then
-        echo "Something went wrong while trying to download Splunk. This script cannot continue. Exiting."
-        exit 1
-      fi
-      if ! dpkg -i /opt/splunk*.deb > /dev/null; then
-        echo "Something went wrong while trying to install Splunk. This script cannot continue. Exiting."
-        exit 1
-      fi
-      /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd changeme
-      # Add a Splunk TCP input on port 9997
-      echo -e "[splunktcp://9997]\nconnection_host = ip" >/opt/splunk/etc/apps/search/local/inputs.conf
-      # Skip Splunk Tour and Change Password Dialog
-      echo "[$(date +%H:%M:%S)]: Disabling the Splunk tour prompt..."
-      touch /opt/splunk/etc/.ui_login
-      mkdir -p /opt/splunk/etc/users/admin/search/local
-      echo -e "[search-tour]\nviewed = 1" >/opt/splunk/etc/system/local/ui-tour.conf
-      # Source: https://answers.splunk.com/answers/660728/how-to-disable-the-modal-pop-up-help-us-to-improve.html
-      if [ ! -d "/opt/splunk/etc/users/admin/user-prefs/local" ]; then
-        mkdir -p "/opt/splunk/etc/users/admin/user-prefs/local"
-      fi
-      echo '[general]
+    /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd changeme
+    /opt/splunk/bin/splunk enable boot-start
+  register: start_splunk
+  changed_when: "'The Splunk web interface is at https://splunk:8000' in start_splunk.stdout"
+  
+- name: Disable Splunk Popups
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+    # Skip Splunk Tour and Change Password Dialog
+    echo "[$(date +%H:%M:%S)]: Disabling the Splunk tour prompt..."
+    touch /opt/splunk/etc/.ui_login
+    mkdir -p /opt/splunk/etc/users/admin/search/local
+    echo -e "[search-tour]\nviewed = 1" >/opt/splunk/etc/system/local/ui-tour.conf
+    # Source: https://answers.splunk.com/answers/660728/how-to-disable-the-modal-pop-up-help-us-to-improve.html
+    if [ ! -d "/opt/splunk/etc/users/admin/user-prefs/local" ]; then
+      mkdir -p "/opt/splunk/etc/users/admin/user-prefs/local"
+    fi
+    echo '[general]
       render_version_messages = 1
       dismissedInstrumentationOptInVersion = 4
       notification_python_3_impact = false' > /opt/splunk/etc/users/admin/user-prefs/local/user-prefs.conf
       # Disable the instrumentation popup
-      echo -e "showOptInModal = 0\noptInVersionAcknowledged = 4" >>/opt/splunk/etc/apps/splunk_instrumentation/local/telemetry.conf
-      # Enable SSL Login for Splunk
-      echo -e "[settings]\nenableSplunkWebSSL = true" >/opt/splunk/etc/system/local/web.conf
-      if [ ! -d "/opt/splunk/etc/apps/search/local/data/ui/views" ]; then
-        mkdir -p "/opt/splunk/etc/apps/search/local/data/ui/views"
-      fi
-      # Reboot Splunk to make changes take effect
-        /opt/splunk/bin/splunk restart
-        /opt/splunk/bin/splunk enable boot-start
-      fi
-  register: install_splunk
-  changed_when: "'The Splunk web interface is at https://splunk:8000' in install_splunk.stdout"
+      echo -e "showOptInModal = 0\noptInVersionAcknowledged = 4" >> /opt/splunk/etc/apps/splunk_instrumentation/local/telemetry.conf
+
+- name: Enable SSL for Splunk
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+    # Enable SSL Login for Splunk
+    echo -e "[settings]\nenableSplunkWebSSL = true" >/opt/splunk/etc/system/local/web.conf
+    if [ ! -d "/opt/splunk/etc/apps/search/local/data/ui/views" ]; then
+      mkdir -p "/opt/splunk/etc/apps/search/local/data/ui/views"
+    fi
 
 - name: Configure Splunk
   args: 
     executable: /bin/bash
   become: yes
   shell: |
+    # Add a Splunk TCP input on port 9997
+    echo -e "[splunktcp://9997]\nconnection_host = ip" >/opt/splunk/etc/apps/search/local/inputs.conf
+    # Add a wineventlog index
     /opt/splunk/bin/splunk add index wineventlog -auth 'admin:changeme'
   register: configure_splunk
   changed_when: "'added' in configure_splunk.stdout"
@@ -160,11 +156,38 @@
     executable: /bin/bash
   become: yes
   shell: |
+    # Install Windows TA
     /opt/splunk/bin/splunk install app /vagrant/resources/splunk_forwarder/splunk-add-on-for-microsoft-windows_800.tgz -auth 'admin:changeme'
+    # Install Sysmon TA
     /opt/splunk/bin/splunk install app /vagrant/resources/splunk_forwarder/splunk-add-on-for-microsoft-sysmon_1062.tgz -auth 'admin:changeme'
-    /opt/splunk/bin/splunk restart
   register: install_splunk_addons
   changed_when: "'You need to restart the Splunk Server (splunkd) for your changes to take effect.' in install_splunk_addons.stdout"
+  
+- name: Restart Splunk
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+    /opt/splunk/bin/splunk restart
+
+- name: Download Cribl
+  get_url:
+    url: https://cdn.cribl.io/dl/2.2.2/cribl-2.2.2-daa210f8-linux-x64.tgz
+    dest: /opt/cribl-2.2.2-daa210f8-linux-x64.tgz
+
+- name: Extract Cribl
+  unarchive:
+    src: /opt/cribl-2.2.2-daa210f8-linux-x64.tgz
+    dest: /opt/
+
+- name: Install Cribl
+  args: 
+    executable: /bin/bash
+  become: yes
+  shell: |
+    /opt/cribl/bin/cribl boot-start enable -m systemd
+    systemctl enable cribl
+    systemctl start cribl
 
 - name: Install Guacamole
   args: 
@@ -201,3 +224,5 @@
   shell: |
     # Include Splunk in the PATH
     echo export PATH="$PATH:/opt/splunk/bin" >>~/.bashrc
+    # Include Cribl in the PATH
+    echo export PATH="$PATH:/opt/cribl/bin" >>~/.bashrc
