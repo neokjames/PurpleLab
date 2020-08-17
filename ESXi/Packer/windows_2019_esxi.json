@@ -13,6 +13,7 @@
       "cpus": "{{ user `cpus` }}",
       "disk_adapter_type": "lsisas1068",
       "disk_size": "{{user `disk_size`}}",
+      "disk_type_id": "thin",
       "floppy_files": [
         "{{user `autounattend`}}"
       ],
