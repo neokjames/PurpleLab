@@ -94,7 +94,7 @@
 
 - name: Install Splunk
   apt: deb="/opt/splunk-8.0.5-a1a6394cc5ae-linux-2.6-amd64.deb"
-  sudo: true
+  become: yes
   when: splunk_check_deb.rc == 1
 
 - name: Start Splunk
