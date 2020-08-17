@@ -65,7 +65,7 @@ resource "esxi_guest" "dc" {
   numvcpus           = "2"
   resource_pool_name = "/"
   power              = "on"
-  clone_from_vm = "WindowsServer2016"
+  clone_from_vm = "WindowsServer2019"
   network_interfaces {
     virtual_network = var.vm_network
     nic_type        = "e1000"
