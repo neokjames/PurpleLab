@@ -1,4 +1,5 @@
 - name: Download and extract Guacamole Server
+  become: yes
   unarchive:
     src: http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/1.2.0/source/guacamole-server-1.2.0.tar.gz
     dest: /opt/
