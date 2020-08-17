@@ -15,19 +15,21 @@
       "disk_size": "{{user `disk_size`}}",
       "disk_type_id": "thin",
       "floppy_files": [
-        "{{user `autounattend`}}"
+        "{{user `autounattend`}}",
+        "../../Packer/scripts/unattend.xml",
+        "../../Packer/scripts/sysprep.bat"
       ],
       "guest_os_type": "windows9srv-64",
       "headless": "{{ user `headless` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
       "iso_url": "{{ user `iso_url` }}",
       "memory": "{{ user `memory` }}",
-      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
-      "shutdown_timeout": "15m",
+      "shutdown_command": "a:/sysprep.bat",
+      "shutdown_timeout": "2h",
       "type": "vmware-iso",
       "version": 11,
       "winrm_password": "vagrant",
-      "winrm_timeout": "12h",
+      "winrm_timeout": "4h",
       "winrm_username": "vagrant",
       "vmx_data": {
           "ethernet0.networkName": "{{user `esxi_network_with_dhcp_and_internet`}}"

@@ -98,7 +98,6 @@
                 <SkipMachineOOBE>true</SkipMachineOOBE>
                 <SkipUserOOBE>true</SkipUserOOBE>
             </OOBE>
-      <ComputerName>vagrant-2019</ComputerName>
       <TimeZone>Tasmania Standard Time</TimeZone>
       <UserAccounts>
         <AdministratorPassword>
