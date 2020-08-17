@@ -81,12 +81,6 @@
   register: test_prerequisites
   failed_when: "'error' in test_prerequisites.stderr"
   
-- name: Check if Splunk is installed
-  command: dpkg-query -W splunk-8.0.5-a1a6394cc5ae-linux-2.6-amd64.deb
-  register: splunk_check_deb
-  failed_when: splunk_check_deb.rc > 1
-  changed_when: splunk_check_deb.rc == 1
-  
 - name: Download Splunk
   become: yes
   get_url:
@@ -96,7 +90,6 @@
 - name: Install Splunk
   apt: deb="/opt/splunk-8.0.5-a1a6394cc5ae-linux-2.6-amd64.deb"
   become: yes
-  when: splunk_check_deb.rc == 1
 
 - name: Start Splunk
   args: 
