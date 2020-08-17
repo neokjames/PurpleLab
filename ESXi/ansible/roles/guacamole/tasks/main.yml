@@ -1,12 +1,9 @@
-- name: Download Guacamole Server
-  get_url:
-    url: http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/1.2.0/source/guacamole-server-1.2.0.tar.gz
-    dest: /opt/guacamole-server-1.2.0.tar.gz
-
-- name: Extract Guacamole Server
+- name: Download and extract Guacamole Server
   unarchive:
-    src: /opt/guacamole-server-1.2.0.tar.gz
+    src: http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/1.2.0/source/guacamole-server-1.2.0.tar.gz
     dest: /opt/
+    creates: /opt/guacamole-server-1.2.0/
+    remote_src: yes
 
 - name: Install pre-requisite packages
   args: 
