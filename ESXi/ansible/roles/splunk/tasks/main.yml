@@ -170,53 +170,6 @@
   shell: |
     /opt/splunk/bin/splunk restart
 
-- name: Download Cribl
-  get_url:
-    url: https://cdn.cribl.io/dl/2.2.2/cribl-2.2.2-daa210f8-linux-x64.tgz
-    dest: /opt/cribl-2.2.2-daa210f8-linux-x64.tgz
-
-- name: Extract Cribl
-  unarchive:
-    src: /opt/cribl-2.2.2-daa210f8-linux-x64.tgz
-    dest: /opt/
-
-- name: Install Cribl
-  args: 
-    executable: /bin/bash
-  become: yes
-  shell: |
-    /opt/cribl/bin/cribl boot-start enable -m systemd
-    systemctl enable cribl
-    systemctl start cribl
-
-- name: Install Guacamole
-  args: 
-    executable: /bin/bash
-  become: yes
-  shell: | 
-    echo "[$(date +%H:%M:%S)]: Installing Guacamole..."
-    cd /opt
-    apt-get -qq install -y gcc g++ libcairo2-dev libjpeg-turbo8-dev libpng-dev libtool-bin libossp-uuid-dev libavcodec-dev libavutil-dev libswscale-dev freerdp2-dev libpango1.0-dev libssh2-1-dev libvncserver-dev libtelnet-dev libssl-dev libvorbis-dev libwebp-dev tomcat9 tomcat9-admin tomcat9-common tomcat9-user
-    wget --progress=bar:force "http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/1.2.0/source/guacamole-server-1.2.0.tar.gz" -O guacamole-server-1.2.0.tar.gz
-    tar -xf guacamole-server-1.2.0.tar.gz && cd guacamole-server-1.2.0
-    ./configure &>/dev/null && make --quiet &>/dev/null && make --quiet install &>/dev/null || echo "[-] An error occurred while installing Guacamole."
-    ldconfig
-    cd /var/lib/tomcat9/webapps
-    wget --progress=bar:force "http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/1.2.0/binary/guacamole-1.2.0.war" -O guacamole.war
-    mkdir /etc/guacamole
-    mkdir /usr/share/tomcat9/.guacamole
-    cp /vagrant/resources/guacamole/user-mapping.xml /etc/guacamole/
-    cp /vagrant/resources/guacamole/guacamole.properties /etc/guacamole/
-    cp /vagrant/resources/guacamole/guacd.service /lib/systemd/system
-    sudo ln -s /etc/guacamole/guacamole.properties /usr/share/tomcat9/.guacamole/
-    sudo ln -s /etc/guacamole/user-mapping.xml /usr/share/tomcat9/.guacamole/
-    systemctl enable guacd
-    systemctl enable tomcat9
-    systemctl start guacd
-    systemctl start tomcat9
-  register: install_guacamole
-  failed_when: "'error' in install_guacamole.stderr"
-
 - name: Postinstall Tasks
   args: 
     executable: /bin/bash
@@ -224,5 +177,3 @@
   shell: |
     # Include Splunk in the PATH
     echo export PATH="$PATH:/opt/splunk/bin" >>~/.bashrc
-    # Include Cribl in the PATH
-    echo export PATH="$PATH:/opt/cribl/bin" >>~/.bashrc
