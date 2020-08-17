@@ -1,14 +1,10 @@
-- name: Download Cribl
-  become: yes
-  get_url:
-    url: https://cdn.cribl.io/dl/2.2.2/cribl-2.2.2-daa210f8-linux-x64.tgz
-    dest: /opt/cribl-2.2.2-daa210f8-linux-x64.tgz
-
-- name: Extract Cribl
+- name: Download and extract Cribl
   become: yes
   unarchive:
-    src: /opt/cribl-2.2.2-daa210f8-linux-x64.tgz
+    src: https://cdn.cribl.io/dl/2.2.2/cribl-2.2.2-daa210f8-linux-x64.tgz
     dest: /opt/
+    creates: /opt/cribl/bin/
+    remote_src: yes
 
 - name: Install Cribl
   args: 
