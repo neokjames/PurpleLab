@@ -88,6 +88,7 @@
   changed_when: splunk_check_deb.rc == 1
   
 - name: Download Splunk
+  become: yes
   get_url:
     url: http://download.splunk.com/products/splunk/releases/8.0.5/linux/splunk-8.0.5-a1a6394cc5ae-linux-2.6-amd64.deb
     dest: /opt/splunk-8.0.5-a1a6394cc5ae-linux-2.6-amd64.deb
