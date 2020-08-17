@@ -3,6 +3,8 @@
 - hosts: splunk
   roles:
     - splunk
+    - cribl
+    - guacamole
   tags: splunk
 
 - hosts: dc
