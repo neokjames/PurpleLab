@@ -120,6 +120,9 @@
       dismissedInstrumentationOptInVersion = 4
       notification_python_3_impact = false' > /opt/splunk/etc/users/admin/user-prefs/local/user-prefs.conf
       # Disable the instrumentation popup
+      if [ ! -d "/opt/splunk/etc/apps/splunk_instrumentation/local" ]; then
+        mkdir -p "/opt/splunk/etc/apps/splunk_instrumentation/local"
+      fi
       echo -e "showOptInModal = 0\noptInVersionAcknowledged = 4" >> /opt/splunk/etc/apps/splunk_instrumentation/local/telemetry.conf
 
 - name: Enable SSL for Splunk
