@@ -3,12 +3,12 @@
     <settings pass="windowsPE">
         <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <SetupUILanguage>
-                <UILanguage>en-AU</UILanguage>
+                <UILanguage>en-US</UILanguage>
             </SetupUILanguage>
-            <InputLocale>en-AU</InputLocale>
-            <SystemLocale>en-AU</SystemLocale>
-            <UILanguage>en-AU</UILanguage>
-            <UILanguageFallback>en-AU</UILanguageFallback>
+            <InputLocale>0c09:00000409</InputLocale>
+            <SystemLocale>en-US</SystemLocale>
+            <UILanguage>en-US</UILanguage>
+            <UILanguageFallback>en-US</UILanguageFallback>
             <UserLocale>en-AU</UserLocale>
         </component>
         <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -81,7 +81,7 @@
   </settings>
   <settings pass="oobeSystem">
     <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <InputLocale>en-AU</InputLocale>
+      <InputLocale>0c09:00000409</InputLocale>
       <SystemLocale>en-AU</SystemLocale>
       <UILanguage>en-AU</UILanguage>
       <UserLocale>en-AU</UserLocale>
