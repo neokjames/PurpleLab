@@ -8,10 +8,10 @@ Welcome to Purple Lab. This project is currently a work in progress.
 
 ## Requirements
 
-55GB+ of free disk space
-16GB+ of RAM
-Packer 1.6.0 or newer
-ESXi 6.x
+* 55GB+ of free disk space
+* 16GB+ of RAM
+* Packer 1.6.0 or newer
+* ESXi 6.x
 
 ## Lab environment
 
