@@ -21,20 +21,18 @@
 1. **(5 Minutes)** Edit the variables in `PurpleLab/ESXi/Packer/variables.json` to match your ESXi configuration. The `esxi_network_with_dhcp_and_internet` variable refers to any ESXi network that will be able to provide DHCP and internet access to the VM while it's being built in Packer.
 
 2. **(45 Minutes)** From the `PurpleLab/ESXi/Packer` directory, run:
-* `PACKER_CACHE_DIR=../../Packer/packer_cache packer build -var-file variables.json windows_2019_esxi.json`
 * `PACKER_CACHE_DIR=../../Packer/packer_cache packer build -var-file variables.json ubuntu2004_esxi.json`
+* `PACKER_CACHE_DIR=../../Packer/packer_cache packer build -var-file variables.json windows_2019_esxi.json`
 
 These commands can be run in parallel from separate terminal sessions.
-
-![Packer](https://github.com/clong/DetectionLab/blob/master/img/esxi_packer.png?raw=true)
 
 3. **(1 Minute)** Once the Packer builds finish, verify that you now see WindowsServer2019, and Ubuntu2004 in your ESXi console
 4. **(5 Minutes)** Edit the variables in `ESXi/variables.tf` to match your local ESXi configuration or [create a terraform.tfvars file](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files) (RECOMMENDED) to override them.
 5. **(25 Minutes)** From `PurpleLab/ESXi`, run `terraform init && terraform apply`
 6. Once Terraform has finished bringing the hosts online, change your directory to `PurpleLab/ESXi/Ansible`
 7. **(1 Minute)** Edit `PurpleLab/ESXi/Ansible/inventory.yml` and replace the IP Addresses with the respective IP Addresses of your ESXi VMs. **These IP addresses much be reachable from your host machine!**
-8. **(3 Minute)s** Edit `PurpleLab/ESXi/resources/01-netcfg.yaml`. These are the IP addresses that will be applied to the logger network interfaces. These should be be able to be found in your ESXi console or from the Terraform outputs.
-9. **(3 Minute)** Before running any Ansible playbooks, I highly recommend taking snapshots of all your VMs! If anything goes wrong with provisioning, you can simply restore the snapshot and easily debug the issue.
+8. **(3 Minutes)** Edit `PurpleLab/ESXi/resources/01-netcfg.yaml`. These are the IP addresses that will be applied to the Splunk server network interfaces. These should be be able to be found in your ESXi console or from the Terraform outputs.
+9. **(3 Minutes)** Before running any Ansible playbooks, I highly recommend taking snapshots of all your VMs! If anything goes wrong with provisioning, you can simply restore the snapshot and easily debug the issue.
 10. Change your directory to `PurpleLab/ESXi/Ansible`
 11. **(30 Minutes)** Run `ansible-playbook -vvv purplelab.yml` 
 
