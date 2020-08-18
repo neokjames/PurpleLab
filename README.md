@@ -1,54 +1,61 @@
-# Introduction
+# purple.lab
 
 Welcome to Purple Lab. This project is currently a work in progress.
 
-# Requirements
+## Purpose
 
-an ESXi host
+## Features
 
-# Quick Start
+## Requirements
 
-## Packer
+55GB+ of free disk space
+16GB+ of RAM
+Packer 1.6.0 or newer
+ESXi 6.x
+
+## Quick Start
+
+### Packer
 
 Packer builds the virtual machine templates required for the project.
 
 1. Define your Packer variables in ```ESXi/packer/variables.json```
 2. Build the Packer templates ```TBA```
 
-## Terraform
+### Terraform
 
 Terraform copies the virtual machine templates and performs basic configuration.
 
 1. Define your Terraform variables in ```ESXi/terraform.tfvars```
 2. Execute ```terraform init && terraform apply```
 
-## Ansible
+### Ansible
 
 Ansible performs the remaining configuration of the virtual machines.
 
-1. Define your Ansible inventory in ```ESXI/ansible/inventory.yml```
+1. Define your Ansible inventory in ```ESXi/ansible/inventory.yml```
 2. Browse to ```ESXi/ansible/``` and execute ```ansible-playbook -vvv purplelab.yml```
 
-# Lab environment
+## Lab environment
 
-## Splunk
+### Splunk
 
 Operating System: Ubuntu 20.04 LTS
 
 Packages installed:
 
-- Splunk Enterprise 8.0.5
+- Splunk Enterprise
 - Guacamole
+- Cribl LogStream
 
-## Domain Controller
+### Domain Controller
 
-Operating System: Windows Server 2016
+Operating System: Windows Server 2019
 
-Packages:
-
+Packages (via Chocolatey):
 - Notepad++
 - 7-Zip
-- Microsoft Edge
+- Google Chrome
 
 ### Log Configuration
 
@@ -57,6 +64,6 @@ Splunk Universal Forwarder 8.0.5
 - [Splunk Add-On for Microsoft Windows 8.0.0](https://splunkbase.splunk.com/app/742)
 - [Splunk Add-On for Microsoft Sysmon 10.6.2](https://splunkbase.splunk.com/app/1914)
 
-# Acknowledgements
+## Credits
 
-Inspired by [Detection Lab](https://github.com/clong/DetectionLab)
+[Detection Lab](https://github.com/clong/DetectionLab) for the majority of the original code, and inspiration for the project.
