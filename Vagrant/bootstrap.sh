@@ -55,10 +55,10 @@ install_splunk() {
     dig @8.8.8.8 download.splunk.com >/dev/null
     dig @8.8.8.8 splunk.com >/dev/null
     dig @8.8.8.8 www.splunk.com >/dev/null
-
+    # Download Splunk
     echo "[$(date +%H:%M:%S)]: Downloading Splunk..."
-    # Download Hardcoded Splunk
     wget --progress=bar:force -O /opt/splunk-8.0.5-a1a6394cc5ae-linux-2.6-amd64.deb 'http://download.splunk.com/products/splunk/releases/8.0.5/linux/splunk-8.0.5-a1a6394cc5ae-linux-2.6-amd64.deb'
+    # Install Splunk
     echo "[$(date +%H:%M:%S)]: Installing Splunk..."
     if ! ls /opt/splunk*.deb 1>/dev/null 2>&1; then
       echo "Something went wrong while trying to download Splunk. This script cannot continue. Exiting."
@@ -69,10 +69,15 @@ install_splunk() {
       exit 1
     fi
 
+    # Start Splunk
     /opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt --seed-passwd changeme
+
+    # Add wineventlog Index
     /opt/splunk/bin/splunk add index wineventlog -auth 'admin:changeme'
+
+    # Install TAs
     /opt/splunk/bin/splunk install app /vagrant/resources/splunk_forwarder/splunk-add-on-for-microsoft-windows_800.tgz -auth 'admin:changeme'
-    /opt/splunk/bin/splunk install app /vagrant/resources/splunk_server/splunk-add-on-for-microsoft-sysmon_1062.tgz -auth 'admin:changeme'
+    /opt/splunk/bin/splunk install app /vagrant/resources/splunk_forwarder/splunk-add-on-for-microsoft-sysmon_1062.tgz -auth 'admin:changeme'
 
     # Add a Splunk TCP input on port 9997
     echo -e "[splunktcp://9997]\nconnection_host = ip" >/opt/splunk/etc/apps/search/local/inputs.conf
@@ -103,6 +108,25 @@ install_guacamole_prereqs() {
     apt-get -qq install -y gcc g++ libcairo2-dev libjpeg-turbo8-dev libpng-dev libtool-bin libossp-uuid-dev libavcodec-dev libavutil-dev libswscale-dev freerdp2-dev libpango1.0-dev libssh2-1-dev libvncserver-dev libtelnet-dev libssl-dev libvorbis-dev libwebp-dev tomcat9 tomcat9-admin tomcat9-common tomcat9-user
 }
 
+test_guacamole_prerequisites() {
+  for package in gcc g++ libcairo2-dev libjpeg-turbo8-dev libpng-dev libtool-bin libossp-uuid-dev libavcodec-dev libavutil-dev libswscale-dev freerdp2-dev libpango1.0-dev libssh2-1-dev libvncserver-dev libtelnet-dev libssl-dev libvorbis-dev libwebp-dev tomcat9 tomcat9-admin tomcat9-common tomcat9-user; do
+    echo "[$(date +%H:%M:%S)]: [TEST] Validating that $package is correctly installed..."
+    # Loop through each package using dpkg
+    if ! dpkg -S $package >/dev/null; then
+      # If which returns a non-zero return code, try to re-install the package
+      echo "[-] $package was not found. Attempting to reinstall."
+      apt-get -qq update && apt-get install -y $package
+      if ! which $package >/dev/null; then
+        # If the reinstall fails, give up
+        echo "[X] Unable to install $package even after a retry. Exiting."
+        exit 1
+      fi
+    else
+      echo "[+] $package was successfully installed!"
+    fi
+  done
+}
+
 install_guacamole() {
   echo "[$(date +%H:%M:%S)]: Installing Guacamole..."
   cd /opt || exit 1
@@ -110,7 +134,7 @@ install_guacamole() {
   tar -xf guacamole-server-1.2.0.tar.gz && cd guacamole-server-1.2.0 || echo "[-] Unable to find the Guacamole folder."
   ./configure &>/dev/null && make --quiet &>/dev/null && make --quiet install &>/dev/null || echo "[-] An error occurred while installing Guacamole."
   ldconfig
-  cd /var/lib/tomcat8/webapps || echo "[-] Unable to find the tomcat8/webapps folder."
+  cd /var/lib/tomcat9/webapps || echo "[-] Unable to find the tomcat9/webapps folder."
   wget --progress=bar:force "http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/1.2.0/binary/guacamole-1.2.0.war" -O guacamole.war
   mkdir /etc/guacamole
   mkdir /usr/share/tomcat9/.guacamole
@@ -136,6 +160,7 @@ main() {
   test_prerequisites
   install_splunk
   install_guacamole_prereqs
+  test_guacamole_prerequisites
   install_guacamole
   postinstall_tasks
 }
