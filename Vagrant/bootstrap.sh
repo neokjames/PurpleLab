@@ -105,7 +105,7 @@ notification_python_3_impact = false' > /opt/splunk/etc/users/admin/user-prefs/l
 
 install_guacamole_prereqs() {
     echo "[$(date +%H:%M:%S)]: Installing Guacamole pre-requisite packages..."
-    apt-get -qq install -y gcc g++ libcairo2-dev libjpeg-turbo8-dev libpng-dev libtool-bin libossp-uuid-dev libavcodec-dev libavutil-dev libswscale-dev freerdp2-dev libpango1.0-dev libssh2-1-dev libvncserver-dev libtelnet-dev libssl-dev libvorbis-dev libwebp-dev tomcat9 tomcat9-admin tomcat9-common tomcat9-user
+    apt-fast -qq install -y gcc g++ libcairo2-dev libjpeg-turbo8-dev libpng-dev libtool-bin libossp-uuid-dev libavcodec-dev libavutil-dev libswscale-dev freerdp2-dev libpango1.0-dev libssh2-1-dev libvncserver-dev libtelnet-dev libssl-dev libvorbis-dev libwebp-dev tomcat9 tomcat9-admin tomcat9-common tomcat9-user
 }
 
 test_guacamole_prerequisites() {
